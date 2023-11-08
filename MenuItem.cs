@@ -19,9 +19,18 @@ namespace VendingMachineSYS
         private int catId;
         private float calories;
 
+        // Specify -1 for menuItemId to create a unique ID for the database.
+
         public MenuItem(int menuItemId, string name, float price, string description, int catId, float calories)
         {
-            this.menuItemId = menuItemId;
+            if (menuItemId == -1)
+            {
+                DeduceID();
+            } 
+            else 
+            {
+                this.menuItemId = menuItemId;
+            }
             this.name = name;
             this.price = price;
             this.description = description;
@@ -29,6 +38,8 @@ namespace VendingMachineSYS
             this.calories = calories;
         }
 
+        // Use this function to set an appropriate ID number based on the next ID which can be used in the database without conflict with the primary key constraint.
+        
         public void DeduceID()
         {
             OracleConnection connection = new OracleConnection(Program.connectionStr);
@@ -39,6 +50,9 @@ namespace VendingMachineSYS
             {
                 MessageBox.Show("Failed to connect to the database.\n\n" + ex.Message + "\n\n" + ex.StackTrace);
             }
+
+            // Check in case no Menu objects have been added yet. If none are found, set the ID to 0
+
             int numItems = 0;
             DataSet dataSet = new DataSet("Unnamed");
             OracleDataAdapter da = new OracleDataAdapter("SELECT * FROM MENU", connection);
@@ -51,6 +65,9 @@ namespace VendingMachineSYS
             {
                 MessageBox.Show("Failed to deduce ID for an instance of \"MenuItem\".\n\n" + ex.Message + "\n\n" + ex.StackTrace, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+
+            // If there are other Menu objects in the database, deduce the appropriate ID. Set the ID to the greatest existing ID + 1
+
             if (numItems > 0)
             {
                 try
